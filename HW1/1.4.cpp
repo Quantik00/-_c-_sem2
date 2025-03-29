@@ -1,6 +1,6 @@
 #include <iostream>
-#include <stack> // Для работы со стеком (хранение открывающих скобок)
-#include <string> // Для работы со строками
+#include <stack> // Для работы со стеком (адаптор), (хранение открывающих скобок) (LIFO принцип -- last in first out)
+#include <string> // Для работы со строками 
 #include <unordered_map> // Для хранения пар скобок в хеш-таблице
 
 using namespace std;
@@ -18,7 +18,7 @@ bool bracketPar(const string& s) {
 
     // Проходим по символьно в строке
     for (char c : s) {
-        //Символ - открывающая скобка
+        //Проверка текущего символа на открывтие
         if (c == '(' || c == '[' || c == '{') {
             stk.push(c);  // Добавили в стек
         } 
@@ -26,7 +26,7 @@ bool bracketPar(const string& s) {
         else {
             // Есть ли соответствующая открывающая скобка в стеке
             if (stk.empty() || stk.top() != matching_bracket[c]) {
-                return false;  // Нет - последовательность неверная
+                return false;  // Если стек пуст => последовательность неверная (нет открывающей пары)
             }
             stk.pop();  // Удаляем соответствующую открывающую скобку из стека
         }
@@ -34,7 +34,7 @@ bool bracketPar(const string& s) {
     
     // Стек пуст - все скобки сбалансированы
     // Не пуст - остались непарные открывающие скобки
-    return stk.empty();
+    return stk.empty(); // вернёт если стек пуст True
 }
 
 int main() {
