@@ -4,14 +4,14 @@
 #include <string>
 
 using namespace std;
-
+// помним что map -- асс контейнер
 map<string, string> parent; // Хранит родителя
 map<string, int> height;    // высота
 map<string, bool> people;   // известные люди
 
 // Рекурсия для вычисления высоты
 int count_height(const string& person) { // определенная ссылка на человека идёт на вход
-    if (height.find(person) != height.end()) {
+    if (height.find(person) != height.end()) { // Если personа нет, он возвращает указатель за последним элементом).
         return height[person]; // Если уже рассчитано в мапе высоты, просто возвращаем
     }
   
@@ -37,7 +37,7 @@ int main() {
     input.close();
 
     // Вычисляем высоты
-    for (const auto& [person, _] : people) {
+    for (const auto& [person, _] : people) { // константная ссылка на ключи нашего мапа
         count_height(person);
     }
 
