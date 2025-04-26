@@ -1,8 +1,8 @@
 #include <iostream>
 #include <vector>
-#include <algorithm>
-#include <chrono>
-#include <random>
+#include <algorithm> // чтобы юзать swap для обменом элементами
+#include <chrono> // чтобы мерить время исполнения программы 
+#include <random> // для генерации случайных элементов массива
 #include <string>
 
 using namespace std;
@@ -114,7 +114,7 @@ vector<int> generateRandomArray(int size) {
 
 // Измерение времени выполнения алгоритма сортировки
 long long measureTime(void (*sortFunc)(vector<int>&), vector<int> arr) {
-    auto start = high_resolution_clock::now(); // Начало отсчета времени
+    auto start = high_resolution_clock::now(); // Начало отсчета времени, high_resolution_clock -- таймер
     sortFunc(arr); // Выполняем сортировку
     auto stop = high_resolution_clock::now(); // Конец отсчета времени
     return duration_cast<milliseconds>(stop-start).count(); // Возвращаем время в миллисекундах
