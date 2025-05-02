@@ -5,16 +5,18 @@
 #include <mutex>
 #include <ctime> 
 
+using namespace std;
+
 const size_t ARRAY_SIZE = 5000; // основной массив
 const size_t NUM_THREADS = 4;   // количество потоков
 
-std::vector<int> data(ARRAY_SIZE);
-std::mutex cout_mutex; // Для безопасного вывода из потоков
+vector<int> data(ARRAY_SIZE);
+mutex cout_mutex; // Для безопасного вывода из потоков
 
 // Функция для заполнения части массива
 void fillArrayPart(size_t start, size_t end, unsigned int seed, size_t thread_id) {
-    std::mt19937 rng(seed); // Генератор случайных чисел: Сид (seed) зависит от текущего времени и ID потока — это гарантирует уникальность последовательности в каждом потоке.
-    std::uniform_int_distribution<int> dist(1, 100); // Диапазон значений
+    mt19937 rng(seed); // Генератор случайных чисел: Сид (seed) зависит от текущего времени и ID потока — это гарантирует уникальность последовательности в каждом потоке.
+    uniform_int_distribution<int> dist(1, 100); // Диапазон значений
 // под каждый поток выделили свою область памяти, чтобы не было гонок данных
     
     for (size_t i = start; i < end; ++i) { // Заполняем часть массива
@@ -22,14 +24,14 @@ void fillArrayPart(size_t start, size_t end, unsigned int seed, size_t thread_id
     }
 
     // Сообщаем о завершении работы
-    std::lock_guard<std::mutex> lock(cout_mutex); // Защита вывода
-    std::cout << "Поток #" << thread_id 
-              << " заполнил элементы с " << start 
-              << " по " << (end - 1) << std::endl;
+    lock_guard<mutex> lock(cout_mutex); // Защита вывода
+    cout << "Поток #" << thread_id 
+         << " заполнил элементы с " << start 
+         << " по " << (end - 1) << endl;
 }
 
 int main() {
-    std::vector<std::thread> threads;
+    vector<thread> threads;
     size_t chunk_size = ARRAY_SIZE / NUM_THREADS; // Размер части массива для каждого потока
 
     for (size_t i = 0; i < NUM_THREADS; ++i) { // Создаем и запускаем потоки
@@ -45,11 +47,11 @@ int main() {
     }
 
     // Покажем первые 10 чисел
-    std::cout << "\nПервые 10 элементов массива:\n";
+    cout << "\nПервые 10 элементов массива:\n";
     for (int i = 0; i < 10; ++i) {
-        std::cout << data[i] << " ";
+        cout << data[i] << " ";
     }
-    std::cout << std::endl;
+    cout << endl;
 
     return 0;
 }
