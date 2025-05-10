@@ -9,7 +9,6 @@
 
 //--------------------------------------------------------------------------------------
 // Структура Book
-// Хранит информацию о книге: id, автор, название.
 //--------------------------------------------------------------------------------------
 struct Book {
     int         id;
@@ -18,30 +17,34 @@ struct Book {
 };
 
 //--------------------------------------------------------------------------------------
-// Класс Red-Black Tree для хранения книг по ключу id
-// Операции: вставка, удаление, поиск, вывод всех элементов
+// Класс Red-Black Tree для хранения книг по ключу id: вставка, удаление, поиск, вывод всех элементов
 //--------------------------------------------------------------------------------------
 class RBTree {
 private:
     struct Node {
         Book   data;
         Node*  parent;
-        Node*  left;
-        Node*  right;
-        bool   red;
+        Node*  left;    //левое дитя
+        Node*  right;    //правое дитя
+        bool   red;    // true если узел red
         explicit Node(const Book& b)
             : data(b), parent(nullptr), left(nullptr), right(nullptr), red(true) {}
     };
 
     Node* root;
-    Node* NIL; // Сентинел вместо nullptr, всегда черный
+    Node* NIL; // спец узел вместо nullptr, всегда черный (для упрощения логики)
 
+
+// Балансируем дерево при вставке и удалении: реализуем повороты 
     // Левый поворот вокруг x
     void leftRotate(Node* x) {
         Node* y = x->right;
+        //Делаем b правым потомком x
         x->right = y->left;
         if (y->left != NIL)
+            //Переносим родителя x к y
             y->left->parent = x;
+        // Обновляем ссылку родителя: Если x был корнем → y становится корнем иначе заменяем x на y у родителя
         y->parent = x->parent;
         if (x->parent == NIL)
             root = y;
@@ -49,11 +52,19 @@ private:
             x->parent->left = y;
         else
             x->parent->right = y;
+        //Делаем x левым потомком y
         y->left = x;
         x->parent = y;
     }
+// рассматриваем, что у узла х правый потомок у 
+//Делаем b правым потомком x
+// 
+
+
+
 
     // Правый поворот вокруг x
+// Тут всё зеркально от левого
     void rightRotate(Node* x) {
         Node* y = x->left;
         x->left = y->right;
@@ -71,26 +82,30 @@ private:
     }
 
     // Восстановление свойств после вставки z
+// чтобы корень был чёрным и у красного не было красного
     void insertFixup(Node* z) {
         while (z->parent->red) {
             Node* grand = z->parent->parent;
             if (z->parent == grand->left) {
                 Node* uncle = grand->right;
-                if (uncle->red) {
+                if (uncle->red) { // дядя красный : Перекрашиваем родителя и дядю в черный, деда в красный, перемещаем z на деда для проверки выше
                     z->parent->red = false;
                     uncle->red     = false;
                     grand->red     = true;
                     z = grand;
                 } else {
-                    if (z == z->parent->right) {
+                    if (z == z->parent->right) { 
+                        // дядя чёрный z- правый потомок : Поворачиваем родителя влево, теперь z стал левым потомком
                         z = z->parent;
                         leftRotate(z);
                     }
+                         // дядя чёрный, z - левый потомок: Перекрашиваем родителя в черный, деда в красный ,поворачиваем деда вправо
                     z->parent->red = false;
                     grand->red     = true;
                     rightRotate(grand);
                 }
             } else {
+                                // Симметричные случаи для правого поддерева
                 Node* uncle = grand->left;
                 if (uncle->red) {
                     z->parent->red = false;
@@ -108,10 +123,10 @@ private:
                 }
             }
         }
-        root->red = false;
+        root->red = false; // по правилам корень всегда чёрный
     }
 
-    // Трансплантация поддерева u на место v
+    // Трансплантация поддерева u на место v (замена одного поддерева другим)
     void transplant(Node* u, Node* v) {
         if (u->parent == NIL)
             root = v;
@@ -131,25 +146,33 @@ private:
 
     // Восстановление свойств после удаления x
     void deleteFixup(Node* x) {
-        while (x != root && !x->red) {
+        while (x != root && !x->red) { // нарушилась "высота чёрных"
             if (x == x->parent->left) {
                 Node* sib = x->parent->right;
-                if (sib->red) {
+                if (sib->red) { 
+                    // брат красный
+                    // Перекрашиваем брата и родителя, поворачиваем родителя влево, переходим к другим случаям
                     sib->red        = false;
                     x->parent->red  = true;
                     leftRotate(x->parent);
                     sib = x->parent->right;
                 }
                 if (!sib->left->red && !sib->right->red) {
+                    // оба потомка брата чёрные
+                    // Перекрашиваем брата в красный, перемещаем x на родителя
                     sib->red = true;
                     x = x->parent;
                 } else {
                     if (!sib->right->red) {
+                        // правый потомок брата черный
+                        // Перекрашиваем левого потомка брата в черный, поворачиваем брата вправо
                         sib->left->red = false;
                         sib->red       = true;
                         rightRotate(sib);
                         sib = x->parent->right;
                     }
+                    // правый потомок брата красный
+                    // Перекрашиваем брата в цвет родителя, родителя и правого потомка в черный, поворачиваем родителя влево
                     sib->red        = x->parent->red;
                     x->parent->red  = false;
                     sib->right->red = false;
@@ -157,6 +180,7 @@ private:
                     x = root;
                 }
             } else {
+                // симметрично для правого подддерева
                 Node* sib = x->parent->left;
                 if (sib->red) {
                     sib->red        = false;
@@ -185,7 +209,8 @@ private:
         x->red = false;
     }
 
-    // Удаление узла z из дерева
+    // Удаление узла z из дерева: Находим узел y для удаления: Если у узла меньше двух потомков → y = z, иначе y = преемник (минимальный в правом поддереве)
+    //Заменяем y на его потомка x через transplant(), если y был черным → вызываем deleteFixup(x)
     void deleteNode(Node* z) {
         Node* y = z;
         Node* x;
@@ -218,14 +243,14 @@ private:
             deleteFixup(x);
     }
 
-    // In-order обход для записи в файл
+    // In-order обход для записи в файл (Рекурсивная запись данных в файл в порядке возрастания id)
     void inOrderWrite(Node* x, std::ofstream& out) const {
         if (x == NIL) return;
-        inOrderWrite(x->left, out);
-        out << x->data.id << ','
+        inOrderWrite(x->left, out); // рекурсия влево
+        out << x->data.id << ',' // пишем текущий  узел 
             << x->data.author << ','
             << x->data.title << '\n';
-        inOrderWrite(x->right, out);
+        inOrderWrite(x->right, out); // рекурсия вправо
     }
 
     // Рекурсивный поиск по id
@@ -238,6 +263,7 @@ private:
     }
 
 public:
+   // Конструктор: инициализирует NIL и root
     RBTree() {
         NIL = new Node({0, "", ""});
         NIL->red = false;
