@@ -28,7 +28,7 @@ private:
         Node*  right;    //правое дитя
         bool   red;    // true если узел red
         explicit Node(const Book& b)
-            : data(b), parent(nullptr), left(nullptr), right(nullptr), red(true) {}
+            : data(b), parent(nullptr), left(nullptr), right(nullptr), red(true) {}  // explicit запрещает неявное преобразование аргументов при вызове конструктора
     };
 
     Node* root;
